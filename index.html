@@ -176,10 +176,33 @@
         }
 
         /* ボタンスタイル */
-        .btn-lang.active {
+        .btn-lang.active,
+        .btn-lang-intro.active {
             color: white;
             background-color: #FF9CEE;
             font-weight: 800;
+        }
+
+        /* イントロモーダル */
+        #intro-modal {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        #intro-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #intro-modal .intro-content {
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        #intro-modal.show .intro-content {
+            transform: scale(1) translateY(0);
         }
 
         /* モーダル */
@@ -285,6 +308,39 @@
                         特別な贈り物を受け取る！</span>
                 </a>
             </div>
+        </div>
+    </div>
+
+    <!-- イントロモーダル -->
+    <div id="intro-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-white/60 backdrop-blur-md"></div>
+        <div class="intro-content relative z-10 w-full max-w-md p-8 text-center rounded-3xl border-4 border-popPink bg-white/95 shadow-2xl">
+            <!-- モーダル内言語切り替え -->
+            <div class="absolute top-4 right-4 flex space-x-1 text-xs font-en font-bold bg-white/50 p-1 rounded-full border border-popPink/20">
+                <button class="btn-lang-intro uppercase px-3 py-1.5 rounded-full transition-colors text-softBrown hover:bg-popPink/10" onclick="setLang('en')" data-intro-lang="en">EN</button>
+                <button class="btn-lang-intro uppercase px-3 py-1.5 rounded-full transition-colors text-softBrown hover:bg-popPink/10" onclick="setLang('jp')" data-intro-lang="jp">JP</button>
+            </div>
+
+            <div class="mb-6 mt-4 animate-bounce">
+                <i class="fa-solid fa-map-location-dot text-5xl text-popPink"></i>
+            </div>
+            
+            <h2 class="text-2xl md:text-3xl font-en font-black text-popPink mb-2 tracking-wider lang-en">Welcome!</h2>
+            <h2 class="text-2xl md:text-3xl font-jp font-black text-popPink mb-2 tracking-wider lang-jp">ようこそ！</h2>
+            
+            <p class="text-softBrown font-bold text-base md:text-lg mb-8 leading-relaxed lang-jp">
+                地図上の<span class="text-popBlue font-black">５つの巡礼地</span>を巡り、<br>
+                特別な<span class="text-popYellow font-black">クーポン</span>をゲットしよう！🎁
+            </p>
+            <p class="text-softBrown font-bold text-base md:text-lg mb-8 leading-relaxed lang-en">
+                Visit <span class="text-popBlue font-black">5 sacred places</span> on the map<br>
+                and get an exclusive <span class="text-popYellow font-black">coupon</span>! 🎁
+            </p>
+
+            <button onclick="closeIntroModal()" class="w-full px-8 py-4 bg-popPink text-white font-black rounded-full hover:bg-popYellow hover:text-softBrown transition-all shadow-lg hover:-translate-y-1 hover:shadow-xl group">
+                <span class="font-en tracking-wider block lang-en">START PILGRIMAGE!</span>
+                <span class="font-jp tracking-widest block lang-jp">巡礼をはじめる！</span>
+            </button>
         </div>
     </div>
 
@@ -718,6 +774,16 @@
 
             const btnEn = document.getElementById('btn-lang-en');
             const btnJp = document.getElementById('btn-lang-jp');
+            
+            // イントロモーダル内のボタン状態も更新する
+            const introBtns = document.querySelectorAll('.btn-lang-intro');
+            introBtns.forEach(btn => {
+                if (btn.getAttribute('data-intro-lang') === lang) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
 
             if (lang === 'en') {
                 btnEn.classList.add('active');
@@ -733,6 +799,18 @@
                 document.querySelectorAll('.leaflet-tooltip .lang-en').forEach(el => el.style.display = 'none');
                 document.querySelectorAll('.leaflet-tooltip .lang-jp').forEach(el => el.style.display = 'inline');
             }
+        }
+
+        // イントロモーダル制御
+        document.addEventListener('DOMContentLoaded', () => {
+            // アプリ起動時に毎回表示する
+            setTimeout(() => {
+                document.getElementById('intro-modal').classList.add('show');
+            }, 300);
+        });
+
+        function closeIntroModal() {
+            document.getElementById('intro-modal').classList.remove('show');
         }
 
         // デバッグ・シークレットコマンド: コンソールから makeit() で全クリア
