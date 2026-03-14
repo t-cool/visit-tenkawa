@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenkawa Spirit Oracle - 天川・聖地のささやき</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        deepgreen: '#1b4332',
+                        offwhite: '#f8f9fa',
+                        gold: '#d4af37',
+                    },
+                    fontFamily: {
+                        sans: ['"Shippori Mincho"', 'serif'],
+                        serif: ['"Cinzel"', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Shippori+Mincho:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #1b4332;
+            color: #f8f9fa;
+        }
+
+        /* Leaflet 地図の色合いを少し暗く・緑がからせるフィルタ（和モダン風へ） */
+        .leaflet-layer,
+        .leaflet-control-zoom-in,
+        .leaflet-control-zoom-out,
+        .leaflet-control-attribution {
+            filter: sepia(0.3) hue-rotate(90deg) contrast(1.1) brightness(0.9);
+        }
+
+        /* マーカーカスタム設定 */
+        .leaflet-div-icon {
+            background: transparent;
+            border: none;
+        }
+
+        .map-marker {
+            width: 32px;
+            height: 32px;
+            background: #1b4332;
+            border: 2px solid rgba(248, 249, 250, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+        }
+        
+        .map-marker:hover {
+            transform: scale(1.1);
+            border-color: #d4af37;
+        }
+
+        .map-marker.visited {
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.9), inset 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+        .map-marker.visited::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: #d4af37;
+            border-radius: 50%;
+            box-shadow: 0 0 5px #d4af37;
+        }
+
+        .user-marker {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6; /* 青 */
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        /* スポットラベル */
+        .leaflet-tooltip.spot-tooltip {
+            background: rgba(27, 67, 50, 0.85);
+            color: #d4af37;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 4px;
+            font-family: 'Shippori Mincho', serif;
+            font-size: 13px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            padding: 4px 8px;
+            backdrop-filter: blur(2px);
+        }
+        .leaflet-tooltip-left.spot-tooltip::before { border-left-color: rgba(27, 67, 50, 0.85); }
+        .leaflet-tooltip-right.spot-tooltip::before { border-right-color: rgba(27, 67, 50, 0.85); }
+
+        /* テキストのフォント適用 */
+        .font-en { font-family: 'Cinzel', serif; }
+        .font-jp { font-family: 'Shippori Mincho', serif; }
+
+        /* 日本語/英語切り替え時の表示制御 */
+        body[data-lang="en"] .lang-jp { display: none; }
+        body[data-lang="jp"] .lang-en { display: none; }
+        
+        /* ボタンスタイル */
+        .btn-lang.active {
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        /* モーダル */
+        #modal {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        #modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        #modal-content {
+            border: 1px solid #d4af37;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.2);
+            background: rgba(27, 67, 50, 0.95);
+            transform: translateY(20px);
+            transition: transform 0.4s ease;
+        }
+        
+        #modal.show #modal-content {
+            transform: translateY(0);
+        }
+
+        /* コンプリートメッセージ */
+        #complete-msg {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1.5s ease;
+        }
+        #complete-msg.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body data-lang="en" class="text-offwhite relative font-sans h-screen w-screen overflow-hidden">
+    
+    <!-- 地図コンテナ -->
+    <div id="map" class="absolute inset-0 z-0"></div>
+
+    <!-- UI レイヤー (地図操作を妨げないように wrapper を pointer-events-none にし、必要な要素だけ auto にする) -->
+    <div class="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between">
+        
+        <!-- ヘッダー -->
+        <header class="w-full p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center pointer-events-none bg-gradient-to-b from-black/80 via-black/40 to-transparent pb-10">
+            <!-- タイトルエリア -->
+            <div class="pointer-events-auto drop-shadow-md mb-4 md:mb-0">
+                <h1 class="text-2xl md:text-3xl font-en font-semibold tracking-widest text-gold text-shadow-lg">Tenkawa Spirit Oracle</h1>
+                <p class="text-sm md:text-base font-jp tracking-widest opacity-90 mt-1">天川・聖地のささやき</p>
+                <p class="mt-2 text-xs opacity-80 max-w-sm leading-relaxed lang-en font-en text-white drop-shadow">
+                    Visit the 5 sacred places on the map to receive their oracles.
+                </p>
+                <p class="mt-2 text-xs opacity-80 max-w-sm leading-relaxed lang-jp text-white drop-shadow">
+                    地図上の5つの聖地を巡り、お告げを受け取りましょう。
+                </p>
+            </div>
+
+            <!-- 言語切替 & GPS スイッチ等 -->
+            <div class="pointer-events-auto flex items-center space-x-4">
+                <button id="btn-gps" onclick="toggleGPS()" class="bg-deepgreen/80 hover:bg-deepgreen text-gold border border-gold/50 rounded-full w-10 h-10 flex items-center justify-center transition" title="Center on my location">
+                    <i class="fa-solid fa-location-crosshairs"></i>
+                </button>
+                <div class="flex space-x-3 text-sm tracking-wider font-serif bg-deepgreen/80 p-2 px-3 justify-center items-center rounded border border-gold/30">
+                    <button id="btn-lang-en" class="btn-lang active uppercase" onclick="setLang('en')">EN</button>
+                    <span class="text-white/30">|</span>
+                    <button id="btn-lang-jp" class="btn-lang uppercase font-sans" onclick="setLang('jp')">JP</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- コンプリートメッセージ -->
+        <div id="complete-msg" class="w-full text-center pb-8 pointer-events-auto">
+            <div class="inline-block bg-deepgreen/95 border border-gold p-6 rounded shadow-xl backdrop-blur mx-4 hidden" id="complete-box">
+                <h2 class="text-xl md:text-2xl text-gold font-en font-semibold tracking-wide mb-2" style="text-shadow: 0 0 10px rgba(212,175,55,0.8);">You are protected by Tenkawa</h2>
+                <h3 class="text-lg md:text-xl text-gold font-jp tracking-widest" style="text-shadow: 0 0 10px rgba(212,175,55,0.8);">天川の守護を授かりました</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- モーダル -->
+    <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- 背景オーバーレイ -->
+        <div class="absolute inset-0 bg-black/70 cursor-pointer" onclick="closeModal()"></div>
+        
+        <!-- モーダルコンテンツ -->
+        <div id="modal-content" class="relative z-10 w-full max-w-lg p-8 text-center rounded-sm">
+            <!-- 閉じるボタン -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-white/50 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl tracking-wider"></i>
+            </button>
+            
+            <div class="mb-6">
+                <i class="fa-solid fa-leaf text-gold text-2xl opacity-80 mb-4"></i>
+                <h3 id="modal-spot-en" class="text-gold font-en text-xl md:text-2xl mb-1 tracking-wider"></h3>
+                <h4 id="modal-spot-jp" class="text-gold/80 font-jp text-lg tracking-widest"></h4>
+            </div>
+            
+            <div class="my-8 relative" id="modal-content-area">
+                <!-- 装飾ライン -->
+                <div class="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 -z-10"></div>
+                
+                <!-- 状態メッセージ表示エリア -->
+                <div id="modal-status" class="py-4 px-2">
+                    <p id="modal-status-text-en" class="font-en text-base md:text-lg text-white/80 lang-en leading-relaxed"></p>
+                    <p id="modal-status-text-jp" class="font-jp text-base md:text-lg text-white/80 lang-jp leading-relaxed"></p>
+                </div>
+
+                <!-- お告げ本文 -->
+                <div id="modal-oracle-container" class="hidden px-2">
+                    <p id="modal-oracle-en" class="font-en text-lg md:text-xl leading-relaxed italic mb-6 text-white/90 lang-en"></p>
+                    <p id="modal-oracle-jp" class="font-jp text-lg md:text-xl leading-loose mb-6 text-white/90 lang-jp"></p>
+                </div>
+            </div>
+            
+            <!-- アクション用ボタン領域 -->
+            <div id="modal-actions" class="flex flex-col items-center">
+                <button id="btn-verify-en" onclick="verifyLocation()" class="mt-2 px-8 py-3 bg-transparent border border-gold/50 text-gold hover:bg-gold hover:text-deepgreen transition-all duration-300 font-en tracking-widest text-sm rounded-sm lang-en">VERIFY LOCATION</button>
+                <button id="btn-verify-jp" onclick="verifyLocation()" class="mt-2 px-8 py-3 bg-transparent border border-gold/50 text-gold hover:bg-gold hover:text-deepgreen transition-all duration-300 font-jp tracking-widest text-sm rounded-sm lang-jp">現在地を確認する</button>
+
+                <button id="btn-receive-en" onclick="receiveOracle()" class="hidden mt-2 px-8 py-3 bg-transparent border border-gold/50 text-gold hover:bg-gold hover:text-deepgreen transition-all duration-300 font-en tracking-widest text-sm rounded-sm lang-en">RECEIVE / CLOSE</button>
+                <button id="btn-receive-jp" onclick="receiveOracle()" class="hidden mt-2 px-8 py-3 bg-transparent border border-gold/50 text-gold hover:bg-gold hover:text-deepgreen transition-all duration-300 font-jp tracking-widest text-sm rounded-sm lang-jp">受け取る / 閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. 定数とデータ定義
+        const spotsData = [
+            {
+                id: 's1',
+                nameEn: 'Ryusen-ji Temple',
+                nameJp: '大峯山 龍泉寺',
+                lat: 34.2694472,
+                lng: 135.8789361,
+                oracleEn: 'Wash your heart with this cold water. You can start a new day.',
+                oracleJp: 'この冷たい水で心を洗いましょう。新しい一日を始められます。'
+            },
+            {
+                id: 's2',
+                nameEn: 'Tenkawa Benzaiten Shrine',
+                nameJp: '天河大辨財天社',
+                lat: 34.223342,
+                lng: 135.841656,
+                oracleEn: 'Listen to your heart. You have a great power to create things.',
+                oracleJp: '自分の心の声を聞いて。あなたには何かを創り出す大きな力があります。'
+            },
+            {
+                id: 's3',
+                nameEn: 'Mitarai Valley',
+                nameJp: 'みたらい渓谷',
+                lat: 34.235553,
+                lng: 135.874833,
+                oracleEn: 'Look at the river and the wind. Nature gives you energy.',
+                oracleJp: '川と風を見てごらん。自然があなたにエネルギーをくれます。'
+            },
+            {
+                id: 's4',
+                nameEn: 'Tochio Kannondo',
+                nameJp: '栃尾観音堂',
+                lat: 34.203126,
+                lng: 135.824034,
+                oracleEn: 'Be quiet here. You will find a kind heart inside you.',
+                oracleJp: 'ここで静かにしてみて。あなたの中に優しい心が見つかるでしょう。'
+            },
+            {
+                id: 's5',
+                nameEn: 'Gorogoro Chaya',
+                nameJp: 'ごろごろ茶屋',
+                lat: 34.266588,
+                lng: 135.894825,
+                oracleEn: 'Drink this water. It is a gift from the earth. Feel the power!',
+                oracleJp: 'この水を飲んで。地球からの贈り物です。パワーを感じて！'
+            }
+        ];
+
+        // 状態管理
+        let visitedSpots = [];
+        let currentSpotId = null;
+        let map;
+        let markers = {};
+        let userMarker = null;
+        let watchId = null;
+        let currentLang = 'en';
+
+        // 2. 初期化処理
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            initMap();
+            startGPSWatch();
+            updateUI();
+        });
+
+        // 3. 地図の初期化
+        function initMap() {
+            // 天川村周辺を中心に表示 (みたらい渓谷付近)
+            map = L.map('map', {
+                zoomControl: false // デフォルトのズームコントロールを非表示にし、後で位置調整
+            }).setView([34.235, 135.850], 12);
+
+            // ズームコントロールの位置を右下に変更
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+            // OpenStreetMapのタイル読み込み
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // スポットマーカーの配置
+            spotsData.forEach(spot => {
+                const icon = L.divIcon({
+                    className: 'map-marker-container',
+                    html: `<div class="map-marker" id="marker-${spot.id}"><i class="fa-solid fa-leaf text-xs"></i></div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16] // 中心をアンカーにする
+                });
+
+                const marker = L.marker([spot.lat, spot.lng], { icon: icon }).addTo(map);
+                
+                // ツールチップ（スポット名）の設定
+                marker.bindTooltip(
+                    `<span class="lang-jp">${spot.nameJp}</span><span class="lang-en">${spot.nameEn}</span>`,
+                    { permanent: true, direction: 'right', className: 'spot-tooltip bg-transparent border-0 shadow-none', offset: [15, 0] }
+                );
+
+                marker.on('click', () => {
+                    // 中心にパン
+                    map.panTo(new L.LatLng(spot.lat, spot.lng));
+                    openModal(spot.id);
+                });
+
+                markers[spot.id] = marker;
+            });
+            
+            // ツールチップの言語表示を初期状態に合わせる
+            setTimeout(() => setLang(currentLang), 100);
+        }
+
+        // --- ユーザーGPSトラッキング ---
+        function startGPSWatch() {
+            if ("geolocation" in navigator) {
+                // 初回1回だけ取得して位置をセット
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        updateUserLocation(position.coords.latitude, position.coords.longitude);
+                    },
+                    (error) => { console.warn("Initial GPS fetch failed", error); },
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                );
+
+                // 以降はウォッチ（変化があれば追従）
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        updateUserLocation(position.coords.latitude, position.coords.longitude);
+                    },
+                    (error) => {
+                        console.warn("GPS watch error", error);
+                    },
+                    { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+                );
+            }
+        }
+
+        function updateUserLocation(lat, lng) {
+            if (!userMarker) {
+                const uIcon = L.divIcon({
+                    className: 'user-marker-container',
+                    html: `<div class="user-marker"></div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+                userMarker = L.marker([lat, lng], { icon: uIcon, zIndexOffset: 1000 }).addTo(map);
+                userMarker.bindPopup("You are here");
+            } else {
+                userMarker.setLatLng([lat, lng]);
+            }
+        }
+
+        function toggleGPS() {
+            if (userMarker) {
+                map.flyTo(userMarker.getLatLng(), 15, { duration: 1.5 });
+            } else {
+                alert(currentLang === 'en' ? "GPS location not found yet." : "現在地が特定されていません。");
+                // 強制的に再フェッチ
+                startGPSWatch();
+            }
+        }
+
+        // 4. アクション (モーダル, 状態更新)
+        function openModal(id) {
+            const spot = spotsData.find(s => s.id === id);
+            if (!spot) return;
+
+            currentSpotId = id;
+            
+            // モーダルコンテンツ設定
+            document.getElementById('modal-spot-en').textContent = spot.nameEn;
+            document.getElementById('modal-spot-jp').textContent = spot.nameJp;
+            
+            const isVisited = visitedSpots.includes(id);
+            
+            if (isVisited) {
+                // すでに訪問済みの場合はお告げを直ちに表示
+                document.getElementById('modal-status').classList.add('hidden');
+                document.getElementById('modal-oracle-container').classList.remove('hidden');
+                
+                document.getElementById('modal-oracle-en').textContent = `"${spot.oracleEn}"`;
+                document.getElementById('modal-oracle-jp').textContent = `「${spot.oracleJp}」`;
+                
+                document.getElementById('btn-verify-en').classList.add('hidden');
+                document.getElementById('btn-verify-jp').classList.add('hidden');
+                document.getElementById('btn-receive-en').classList.remove('hidden');
+                document.getElementById('btn-receive-jp').classList.remove('hidden');
+                
+                document.getElementById('btn-receive-en').textContent = "CLOSE";
+                document.getElementById('btn-receive-jp').textContent = "閉じる";
+            } else {
+                // 未訪問の場合は位置情報チェックを促す
+                document.getElementById('modal-status').classList.remove('hidden');
+                document.getElementById('modal-oracle-container').classList.add('hidden');
+                
+                document.getElementById('modal-status-text-en').textContent = "You must be within 500m of this location to receive the oracle.";
+                document.getElementById('modal-status-text-jp').textContent = "お告げを受け取るには、この聖地の500m以内にいる必要があります。";
+                
+                document.getElementById('btn-verify-en').classList.remove('hidden');
+                document.getElementById('btn-verify-jp').classList.remove('hidden');
+                document.getElementById('btn-receive-en').classList.add('hidden');
+                document.getElementById('btn-receive-jp').classList.add('hidden');
+                
+                document.getElementById('btn-verify-en').textContent = "VERIFY LOCATION";
+                document.getElementById('btn-verify-jp').textContent = "現在地を確認する";
+            }
+
+            // モーダル表示
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+            currentSpotId = null;
+        }
+
+        // --- GPS判定ロジック (モーダル内) ---
+        function verifyLocation() {
+            const spot = spotsData.find(s => s.id === currentSpotId);
+            if (!spot) return;
+
+            document.getElementById('btn-verify-en').textContent = "CHECKING...";
+            document.getElementById('btn-verify-jp').textContent = "確認中...";
+
+            if (!navigator.geolocation) {
+                showLocationError(
+                    "Geolocation is not supported by your browser.",
+                    "お使いのブラウザは位置情報サービスをサポートしていません。"
+                );
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+                    
+                    // 地図上のユーザーマーカーも更新しておく
+                    updateUserLocation(userLat, userLng);
+
+                    const distance = Math.round(getDistanceFromLatLonInM(userLat, userLng, spot.lat, spot.lng));
+
+                    if (distance <= 500) {
+                        onLocationSuccess(spot);
+                    } else {
+                        showLocationError(
+                            `You are too far away. (Distance: ${distance}m)`,
+                            `指定された場所から離れすぎています。(距離: ${distance}m)`
+                        );
+                    }
+                },
+                (error) => {
+                    let msgEn = "Unable to retrieve your location.";
+                    let msgJp = "位置情報を取得できませんでした。";
+                    if (error.code === error.PERMISSION_DENIED) {
+                        msgEn = "Location access denied. Please enable GPS.";
+                        msgJp = "位置情報の取得が拒否されました。GPSを有効にしてください。";
+                    }
+                    showLocationError(msgEn, msgJp);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        }
+
+        function showLocationError(msgEn, msgJp) {
+            document.getElementById('modal-status-text-en').textContent = msgEn;
+            document.getElementById('modal-status-text-jp').textContent = msgJp;
+            document.getElementById('btn-verify-en').textContent = "TRY AGAIN";
+            document.getElementById('btn-verify-jp').textContent = "再試行する";
+        }
+
+        function onLocationSuccess(spot) {
+            document.getElementById('modal-status').classList.add('hidden');
+            document.getElementById('modal-oracle-container').classList.remove('hidden');
+            document.getElementById('modal-oracle-en').textContent = `"${spot.oracleEn}"`;
+            document.getElementById('modal-oracle-jp').textContent = `「${spot.oracleJp}」`;
+
+            document.getElementById('btn-verify-en').classList.add('hidden');
+            document.getElementById('btn-verify-jp').classList.add('hidden');
+            document.getElementById('btn-receive-en').classList.remove('hidden');
+            document.getElementById('btn-receive-jp').classList.remove('hidden');
+
+            document.getElementById('btn-receive-en').textContent = "RECEIVE";
+            document.getElementById('btn-receive-jp').textContent = "お告げを受け取る";
+        }
+
+        function receiveOracle() {
+            if (currentSpotId && !visitedSpots.includes(currentSpotId)) {
+                visitedSpots.push(currentSpotId);
+                saveState();
+                updateUI();
+            }
+            closeModal();
+        }
+
+        function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * (Math.PI / 180);
+            const dLon = (lon2 - lon1) * (Math.PI / 180);
+            const a = 
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+                Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+            const d = R * c; 
+            return d;
+        }
+
+        // 5. 状態とUIの同期
+        function updateUI() {
+            let visitedCount = 0;
+
+            // マーカーアイコンの更新
+            spotsData.forEach((spot) => {
+                const markerEl = document.getElementById(`marker-${spot.id}`);
+                if (markerEl) {
+                    if (visitedSpots.includes(spot.id)) {
+                        markerEl.classList.add('visited');
+                        visitedCount++;
+                    } else {
+                        markerEl.classList.remove('visited');
+                    }
+                }
+            });
+
+            // コンプリートメッセージの表示
+            const completeMsg = document.getElementById('complete-msg');
+            const completeBox = document.getElementById('complete-box');
+            if (visitedCount === spotsData.length) {
+                completeMsg.classList.add('show');
+                completeBox.classList.remove('hidden');
+            } else {
+                completeMsg.classList.remove('show');
+                completeBox.classList.add('hidden');
+            }
+        }
+
+        // 6. ローカルストレージ
+        function saveState() {
+            try {
+                localStorage.setItem('tenkawa_visited_spots', JSON.stringify(visitedSpots));
+            } catch (e) {
+                console.warn('LocalStorage is not available');
+            }
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('tenkawa_visited_spots');
+                if (saved) {
+                    visitedSpots = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.warn('LocalStorage is not available');
+            }
+        }
+
+        // 7. 言語切り替え
+        function setLang(lang) {
+            currentLang = lang;
+            document.body.setAttribute('data-lang', lang);
+            
+            const btnEn = document.getElementById('btn-lang-en');
+            const btnJp = document.getElementById('btn-lang-jp');
+            
+            if (lang === 'en') {
+                btnEn.classList.add('active');
+                btnJp.classList.remove('active');
+                
+                // ツールチップの表示状態を更新（動的にクラス操作など）
+                document.querySelectorAll('.leaflet-tooltip .lang-jp').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.leaflet-tooltip .lang-en').forEach(el => el.style.display = 'inline');
+            } else {
+                btnEn.classList.remove('active');
+                btnJp.classList.add('active');
+                
+                document.querySelectorAll('.leaflet-tooltip .lang-en').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.leaflet-tooltip .lang-jp').forEach(el => el.style.display = 'inline');
+            }
+        }
+    </script>
+</body>
+</html>
