@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,13 +13,16 @@
             theme: {
                 extend: {
                     colors: {
-                        deepgreen: '#1b4332',
-                        offwhite: '#f8f9fa',
-                        gold: '#d4af37',
+                        popPink: '#FF9CEE',
+                        popBlue: '#84D2F6',
+                        popYellow: '#FDE74C',
+                        softBrown: '#5D4037',
+                        bgWhite: '#FFF9F5',
+                        whiteOverlay: 'rgba(255, 255, 255, 0.85)',
                     },
                     fontFamily: {
-                        sans: ['"Shippori Mincho"', 'serif'],
-                        serif: ['"Cinzel"', 'serif'],
+                        sans: ['"M PLUS Rounded 1c"', 'sans-serif'],
+                        en: ['"Nunito"', 'sans-serif'],
                     }
                 }
             }
@@ -27,27 +31,31 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Shippori+Mincho:wght@400;600;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Nunito:wght@400;700;800;900&display=swap"
+        rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Leaflet CSS & JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <!-- Custom CSS -->
     <style>
         body {
-            background-color: #1b4332;
-            color: #f8f9fa;
+            background-color: #FFF9F5;
+            color: #5D4037;
         }
 
-        /* Leaflet 地図の色合いを少し暗く・緑がからせるフィルタ（和モダン風へ） */
+        /* Leaflet 地図の色合いを明るく、少し温かみのあるフィルタへ */
         .leaflet-layer,
         .leaflet-control-zoom-in,
         .leaflet-control-zoom-out,
         .leaflet-control-attribution {
-            filter: sepia(0.3) hue-rotate(90deg) contrast(1.1) brightness(0.9);
+            filter: contrast(1.05) brightness(1.05) saturate(1.2) hue-rotate(-5deg);
         }
 
         /* マーカーカスタム設定 */
@@ -57,84 +65,121 @@
         }
 
         .map-marker {
-            width: 32px;
-            height: 32px;
-            background: #1b4332;
-            border: 2px solid rgba(248, 249, 250, 0.9);
+            width: 38px;
+            height: 38px;
+            background: #FF9CEE;
+            border: 3px solid white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            font-size: 18px;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 6px 10px rgba(255, 156, 238, 0.4);
         }
-        
+
         .map-marker:hover {
-            transform: scale(1.1);
-            border-color: #d4af37;
+            transform: scale(1.15) translateY(-5px);
+            background: #FDE74C;
+            color: #FF9CEE;
+            box-shadow: 0 8px 15px rgba(253, 231, 76, 0.6);
         }
 
         .map-marker.visited {
-            border-color: #d4af37;
-            background: rgba(212, 175, 55, 0.3);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.9), inset 0 0 10px rgba(212, 175, 55, 0.5);
+            background: #84D2F6;
+            border-color: white;
+            box-shadow: 0 0 15px rgba(132, 210, 246, 0.8);
         }
+
         .map-marker.visited::after {
-            content: '';
-            width: 10px;
-            height: 10px;
-            background: #d4af37;
+            content: '\f00c';
+            /* チェックマーク */
+            font-family: 'FontAwesome';
+            font-size: 14px;
+            color: white;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #FDE74C;
             border-radius: 50%;
-            box-shadow: 0 0 5px #d4af37;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
         }
 
         .user-marker {
-            width: 20px;
-            height: 20px;
-            background: #3b82f6; /* 青 */
+            width: 24px;
+            height: 24px;
+            background: #FDE74C;
+            /* 黄色 */
             border: 3px solid white;
             border-radius: 50%;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.5);
-            animation: pulse 2s infinite;
+            box-shadow: 0 0 10px rgba(253, 231, 76, 0.8);
+            animation: bounce-pulse 2s infinite;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        @keyframes bounce-pulse {
+
+            0%,
+            100% {
+                transform: scale(1) translateY(0);
+                box-shadow: 0 0 0 0 rgba(253, 231, 76, 0.7);
+            }
+
+            50% {
+                transform: scale(1.1) translateY(-3px);
+                box-shadow: 0 0 0 10px rgba(253, 231, 76, 0);
+            }
         }
 
         /* スポットラベル */
         .leaflet-tooltip.spot-tooltip {
-            background: rgba(27, 67, 50, 0.85);
-            color: #d4af37;
-            border: 1px solid rgba(212, 175, 55, 0.5);
-            border-radius: 4px;
-            font-family: 'Shippori Mincho', serif;
-            font-size: 13px;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            padding: 4px 8px;
-            backdrop-filter: blur(2px);
+            background: rgba(255, 255, 255, 0.95);
+            color: #FF9CEE;
+            border: 2px solid #FF9CEE;
+            border-radius: 20px;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            font-size: 14px;
+            font-weight: 800;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 6px 12px;
         }
-        .leaflet-tooltip-left.spot-tooltip::before { border-left-color: rgba(27, 67, 50, 0.85); }
-        .leaflet-tooltip-right.spot-tooltip::before { border-right-color: rgba(27, 67, 50, 0.85); }
+
+        .leaflet-tooltip-left.spot-tooltip::before {
+            border-left-color: #FF9CEE;
+        }
+
+        .leaflet-tooltip-right.spot-tooltip::before {
+            border-right-color: #FF9CEE;
+        }
 
         /* テキストのフォント適用 */
-        .font-en { font-family: 'Cinzel', serif; }
-        .font-jp { font-family: 'Shippori Mincho', serif; }
+        .font-en {
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .font-jp {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+        }
 
         /* 日本語/英語切り替え時の表示制御 */
-        body[data-lang="en"] .lang-jp { display: none; }
-        body[data-lang="jp"] .lang-en { display: none; }
-        
+        body[data-lang="en"] .lang-jp {
+            display: none;
+        }
+
+        body[data-lang="jp"] .lang-en {
+            display: none;
+        }
+
         /* ボタンスタイル */
         .btn-lang.active {
-            color: #d4af37;
-            font-weight: bold;
+            color: white;
+            background-color: #FF9CEE;
+            font-weight: 800;
         }
 
         /* モーダル */
@@ -142,78 +187,155 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.4s ease;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
         }
-        
+
         #modal.show {
             opacity: 1;
             pointer-events: auto;
         }
-        
+
         #modal-content {
-            border: 1px solid #d4af37;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.2);
-            background: rgba(27, 67, 50, 0.95);
-            transform: translateY(20px);
-            transition: transform 0.4s ease;
+            border: 4px solid #FF9CEE;
+            border-radius: 2rem;
+            box-shadow: 0 10px 30px rgba(255, 156, 238, 0.3);
+            background: rgba(255, 255, 255, 0.98);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
-        
+
         #modal.show #modal-content {
-            transform: translateY(0);
+            transform: scale(1) translateY(0);
+        }
+
+        /* アンケート＆クーポン モーダル (フルスクリーン) */
+        #gift-modal {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        #gift-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .gift-content {
+            background: linear-gradient(135deg, #FFF9F5 0%, #FFE5F4 100%);
+            border: 4px solid #FF9CEE;
+            border-radius: 2rem;
+            box-shadow: 0 10px 40px rgba(255, 156, 238, 0.5);
+        }
+
+        /* クーポンデザイン */
+        .coupon-ticket {
+            background: white;
+            color: #5D4037;
+            border: 3px dashed #84D2F6;
+            border-radius: 1rem;
+            position: relative;
+        }
+
+        .coupon-ticket::before,
+        .coupon-ticket::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30px;
+            height: 30px;
+            background: #FFE5F4;
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+
+        .coupon-ticket::before {
+            left: -15px;
+            border-right: 3px dashed #84D2F6;
+        }
+
+        .coupon-ticket::after {
+            right: -15px;
+            border-left: 3px dashed #84D2F6;
         }
 
         /* コンプリートメッセージ */
         #complete-msg {
             opacity: 0;
             transform: translateY(20px);
-            transition: all 1.5s ease;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
+
         #complete-msg.show {
             opacity: 1;
             transform: translateY(0);
         }
     </style>
 </head>
-<body data-lang="en" class="text-offwhite relative font-sans h-screen w-screen overflow-hidden">
-    
+
+<body data-lang="en" class="text-softBrown relative font-sans h-screen w-screen overflow-hidden bg-bgWhite">
+
     <!-- 地図コンテナ -->
     <div id="map" class="absolute inset-0 z-0"></div>
 
-    <!-- UI レイヤー (地図操作を妨げないように wrapper を pointer-events-none にし、必要な要素だけ auto にする) -->
+    <!-- UI レイヤー -->
     <div class="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between">
-        
+
         <!-- ヘッダー -->
-        <header class="w-full p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center pointer-events-none bg-gradient-to-b from-black/80 via-black/40 to-transparent pb-10">
+        <header
+            class="w-full p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center pointer-events-none bg-gradient-to-b from-whiteOverlay via-whiteOverlay/80 to-transparent pb-10">
             <!-- タイトルエリア -->
-            <div class="pointer-events-auto drop-shadow-md mb-4 md:mb-0">
-                <h1 class="text-2xl md:text-3xl font-en font-semibold tracking-widest text-gold text-shadow-lg">Tenkawa Spirit Oracle</h1>
-                <p class="text-sm md:text-base font-jp tracking-widest opacity-90 mt-1">天川・聖地のささやき</p>
-                <p class="mt-2 text-xs opacity-80 max-w-sm leading-relaxed lang-en font-en text-white drop-shadow">
-                    Visit the 5 sacred places on the map to receive their oracles.
+            <div
+                class="pointer-events-auto bg-white/90 p-3 rounded-2xl shadow-sm border border-popPink/30 mb-4 md:mb-0 backdrop-blur-sm">
+                <h1 class="text-2xl md:text-3xl font-en font-black tracking-wide text-popPink drop-shadow-sm">Tenkawa
+                    Spirit Oracle</h1>
+                <p class="text-sm md:text-base font-jp font-bold text-popBlue mt-1">天川巡礼の旅</p>
+                <p class="mt-2 text-xs font-en text-softBrown/80 max-w-sm leading-relaxed lang-en">
+                    Visit the 5 sacred places on the map to receive their oracles!
                 </p>
-                <p class="mt-2 text-xs opacity-80 max-w-sm leading-relaxed lang-jp text-white drop-shadow">
-                    地図上の5つの聖地を巡り、お告げを受け取りましょう。
+                <p class="mt-2 text-xs font-jp text-softBrown/80 max-w-sm leading-relaxed lang-jp">
+                    地図上の5つの聖地を巡り、お告げを受け取ろう！
                 </p>
             </div>
 
             <!-- 言語切替 & GPS スイッチ等 -->
-            <div class="pointer-events-auto flex items-center space-x-4">
-                <button id="btn-gps" onclick="toggleGPS()" class="bg-deepgreen/80 hover:bg-deepgreen text-gold border border-gold/50 rounded-full w-10 h-10 flex items-center justify-center transition" title="Center on my location">
-                    <i class="fa-solid fa-location-crosshairs"></i>
+            <div class="pointer-events-auto flex items-center space-x-3">
+                <button id="btn-gps" onclick="toggleGPS()"
+                    class="bg-popYellow/90 hover:bg-popYellow text-softBrown border-2 border-white rounded-full w-12 h-12 flex items-center justify-center transition shadow-md hover:-translate-y-1"
+                    title="Center on my location">
+                    <i class="fa-solid fa-location-crosshairs text-lg"></i>
                 </button>
-                <div class="flex space-x-3 text-sm tracking-wider font-serif bg-deepgreen/80 p-2 px-3 justify-center items-center rounded border border-gold/30">
-                    <button id="btn-lang-en" class="btn-lang active uppercase" onclick="setLang('en')">EN</button>
-                    <span class="text-white/30">|</span>
-                    <button id="btn-lang-jp" class="btn-lang uppercase font-sans" onclick="setLang('jp')">JP</button>
+                <div
+                    class="flex space-x-1 text-sm font-en font-bold bg-white/90 p-1.5 rounded-full shadow-md border border-popPink/20">
+                    <button id="btn-lang-en"
+                        class="btn-lang uppercase px-4 py-2 rounded-full transition-colors text-softBrown"
+                        onclick="setLang('en')">EN</button>
+                    <button id="btn-lang-jp"
+                        class="btn-lang uppercase px-4 py-2 rounded-full transition-colors text-softBrown"
+                        onclick="setLang('jp')">JP</button>
                 </div>
             </div>
         </header>
 
         <!-- コンプリートメッセージ -->
         <div id="complete-msg" class="w-full text-center pb-8 pointer-events-auto">
-            <div class="inline-block bg-deepgreen/95 border border-gold p-6 rounded shadow-xl backdrop-blur mx-4 hidden" id="complete-box">
-                <h2 class="text-xl md:text-2xl text-gold font-en font-semibold tracking-wide mb-2" style="text-shadow: 0 0 10px rgba(212,175,55,0.8);">You are protected by Tenkawa</h2>
-                <h3 class="text-lg md:text-xl text-gold font-jp tracking-widest" style="text-shadow: 0 0 10px rgba(212,175,55,0.8);">天川の守護を授かりました</h3>
+            <div class="inline-block bg-white/95 border-4 border-popYellow p-6 rounded-3xl shadow-xl backdrop-blur mx-4 hidden flex flex-col items-center"
+                id="complete-box">
+                <h2
+                    class="text-2xl md:text-3xl text-popPink font-en font-black mb-2 animate-bounce flex items-center gap-2">
+                    <i class="fa-solid fa-star text-popYellow"></i> Protected by Tenkawa <i
+                        class="fa-solid fa-star text-popYellow"></i>
+                </h2>
+                <h3 class="text-lg md:text-xl text-popBlue font-jp font-bold tracking-widest mb-6">天川の守護を授かりました！</h3>
+
+                <button onclick="openGiftModal()"
+                    class="px-8 py-4 bg-popPink text-white font-black rounded-full hover:bg-popYellow hover:text-softBrown transition-all shadow-lg hover:-translate-y-1 hover:shadow-xl group">
+                    <span class="font-en tracking-wider block lang-en"><i class="fa-solid fa-gift mr-2"></i> GET YOUR
+                        EXCLUSIVE GIFT!</span>
+                    <span class="font-jp tracking-widest block lang-jp"><i class="fa-solid fa-gift mr-2"></i>
+                        特別な贈り物を受け取る！</span>
+                </button>
             </div>
         </div>
     </div>
@@ -221,45 +343,151 @@
     <!-- モーダル -->
     <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <!-- 背景オーバーレイ -->
-        <div class="absolute inset-0 bg-black/70 cursor-pointer" onclick="closeModal()"></div>
-        
+        <div class="absolute inset-0 bg-white/40 cursor-pointer backdrop-blur-sm" onclick="closeModal()"></div>
+
         <!-- モーダルコンテンツ -->
         <div id="modal-content" class="relative z-10 w-full max-w-lg p-8 text-center rounded-sm">
             <!-- 閉じるボタン -->
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-white/50 hover:text-white transition-colors">
-                <i class="fa-solid fa-xmark text-xl tracking-wider"></i>
+            <button onclick="closeModal()"
+                class="absolute top-3 right-3 text-softBrown/40 hover:text-popPink transition-colors bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-xl"></i>
             </button>
-            
+
             <div class="mb-6">
-                <i class="fa-solid fa-leaf text-gold text-2xl opacity-80 mb-4"></i>
-                <h3 id="modal-spot-en" class="text-gold font-en text-xl md:text-2xl mb-1 tracking-wider"></h3>
-                <h4 id="modal-spot-jp" class="text-gold/80 font-jp text-lg tracking-widest"></h4>
+                <div
+                    class="w-16 h-16 bg-popPink/10 text-popPink rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-popPink shadow-inner">
+                    <i class="fa-solid fa-leaf text-2xl"></i>
+                </div>
+                <h3 id="modal-spot-en" class="text-popPink font-en font-black text-xl md:text-2xl mb-1 tracking-wider">
+                </h3>
+                <h4 id="modal-spot-jp" class="text-popBlue font-jp font-bold text-lg"></h4>
             </div>
-            
-            <div class="my-8 relative" id="modal-content-area">
-                <!-- 装飾ライン -->
-                <div class="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 -z-10"></div>
-                
+
+            <div class="my-6 relative bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+                id="modal-content-area">
                 <!-- 状態メッセージ表示エリア -->
-                <div id="modal-status" class="py-4 px-2">
-                    <p id="modal-status-text-en" class="font-en text-base md:text-lg text-white/80 lang-en leading-relaxed"></p>
-                    <p id="modal-status-text-jp" class="font-jp text-base md:text-lg text-white/80 lang-jp leading-relaxed"></p>
+                <div id="modal-status" class="py-2 px-2">
+                    <p id="modal-status-text-en"
+                        class="font-en font-bold text-base md:text-lg text-softBrown lang-en leading-relaxed"></p>
+                    <p id="modal-status-text-jp"
+                        class="font-jp font-bold text-base md:text-lg text-softBrown lang-jp leading-relaxed"></p>
+                    <div class="mt-4 animate-bounce">
+                        <i class="fa-solid fa-person-walking-luggage text-popBlue text-3xl"></i>
+                    </div>
                 </div>
 
                 <!-- お告げ本文 -->
                 <div id="modal-oracle-container" class="hidden px-2">
-                    <p id="modal-oracle-en" class="font-en text-lg md:text-xl leading-relaxed italic mb-6 text-white/90 lang-en"></p>
-                    <p id="modal-oracle-jp" class="font-jp text-lg md:text-xl leading-loose mb-6 text-white/90 lang-jp"></p>
+                    <p id="modal-oracle-en"
+                        class="font-en font-bold text-lg md:text-xl leading-relaxed text-softBrown lang-en"></p>
+                    <p id="modal-oracle-jp"
+                        class="font-jp font-bold text-lg md:text-xl leading-loose text-softBrown lang-jp"></p>
                 </div>
             </div>
-            
+
             <!-- アクション用ボタン領域 -->
             <div id="modal-actions" class="flex flex-col items-center">
-                <button id="btn-verify-en" onclick="verifyLocation()" class="mt-2 px-8 py-3 bg-transparent border border-gold/50 text-gold hover:bg-gold hover:text-deepgreen transition-all duration-300 font-en tracking-widest text-sm rounded-sm lang-en">VERIFY LOCATION</button>
-                <button id="btn-verify-jp" onclick="verifyLocation()" class="mt-2 px-8 py-3 bg-transparent border border-gold/50 text-gold hover:bg-gold hover:text-deepgreen transition-all duration-300 font-jp tracking-widest text-sm rounded-sm lang-jp">現在地を確認する</button>
+                <button id="btn-verify-en" onclick="verifyLocation()"
+                    class="mt-2 px-8 py-3 bg-popYellow text-softBrown font-bold hover:bg-popPink hover:text-white transition-all duration-300 font-en tracking-wider rounded-full shadow-md hover:-translate-y-1 hover:shadow-lg lang-en">VERIFY
+                    LOCATION</button>
+                <button id="btn-verify-jp" onclick="verifyLocation()"
+                    class="mt-2 px-8 py-3 bg-popYellow text-softBrown font-bold hover:bg-popPink hover:text-white transition-all duration-300 font-jp tracking-wider rounded-full shadow-md hover:-translate-y-1 hover:shadow-lg lang-jp">現在地を確認する</button>
 
-                <button id="btn-receive-en" onclick="receiveOracle()" class="hidden mt-2 px-8 py-3 bg-transparent border border-gold/50 text-gold hover:bg-gold hover:text-deepgreen transition-all duration-300 font-en tracking-widest text-sm rounded-sm lang-en">RECEIVE / CLOSE</button>
-                <button id="btn-receive-jp" onclick="receiveOracle()" class="hidden mt-2 px-8 py-3 bg-transparent border border-gold/50 text-gold hover:bg-gold hover:text-deepgreen transition-all duration-300 font-jp tracking-widest text-sm rounded-sm lang-jp">受け取る / 閉じる</button>
+                <button id="btn-receive-en" onclick="receiveOracle()"
+                    class="hidden mt-2 px-8 py-3 bg-popPink text-white font-bold hover:bg-popBlue transition-all duration-300 font-en tracking-wider rounded-full shadow-md hover:-translate-y-1 hover:shadow-lg lang-en">RECEIVE
+                    & CLOSE</button>
+                <button id="btn-receive-jp" onclick="receiveOracle()"
+                    class="hidden mt-2 px-8 py-3 bg-popPink text-white font-bold hover:bg-popBlue transition-all duration-300 font-jp tracking-wider rounded-full shadow-md hover:-translate-y-1 hover:shadow-lg lang-jp">受け取る
+                    / 閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 隠しクリア画面 (アンケート & クーポン) モーダル -->
+    <div id="gift-modal" class="fixed inset-0 flex items-center justify-center p-4 sm:p-6 md:p-12">
+        <div class="absolute inset-0 bg-white/60 backdrop-blur-md"></div>
+
+        <div class="gift-content relative z-10 w-full max-w-4xl h-full max-h-[90vh] flex flex-col overflow-hidden">
+            <!-- 閉じるボタン -->
+            <button onclick="closeGiftModal()"
+                class="absolute top-4 right-4 z-50 text-softBrown hover:text-popPink bg-white rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-md">
+                <i class="fa-solid fa-xmark text-2xl font-black"></i>
+            </button>
+
+            <!-- ステップ1: アンケートフォーム -->
+            <div id="gift-step-survey" class="flex flex-col h-full items-center p-6 md:p-10">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl md:text-3xl text-popPink font-en font-black mb-2 lang-en">Questionnaire 📝</h2>
+                    <h2 class="text-2xl md:text-3xl text-popPink font-jp font-black mb-2 lang-jp">アンケート 📝</h2>
+                    <p class="text-softBrown font-bold text-sm md:text-base lang-en">Please answer this quick survey to
+                        unlock your 500 JPY village coupon!</p>
+                    <p class="text-softBrown font-bold text-sm md:text-base lang-jp">
+                        村内で使える500円クーポンを受け取るため、簡単なアンケートにお答えください！</p>
+                </div>
+
+                <div
+                    class="flex-grow w-full bg-white rounded-2xl overflow-hidden shadow-inner border-2 border-popPink/20 relative">
+                    <iframe
+                        src="https://docs.google.com/forms/d/e/1FAIpQLScU0D5Vp-W4sXg-gG2XWe30d4M-F57-c5m3Q2_5J6wF9d5X9A/viewform?embedded=true"
+                        width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0">読み込んでいます…</iframe>
+                </div>
+
+                <div class="mt-6 text-center w-full max-w-md">
+                    <p class="text-popBlue font-bold text-sm md:text-base mb-3 font-jp lang-jp"><i
+                            class="fa-solid fa-arrow-down mr-1"></i> 回答完了画面が表示されたらボタンを押してね！</p>
+                    <p class="text-popBlue font-bold text-sm md:text-base mb-3 font-en lang-en"><i
+                            class="fa-solid fa-arrow-down mr-1"></i> Click the button after submitting!</p>
+                    <button onclick="showCoupon()"
+                        class="w-full py-4 bg-popYellow text-softBrown font-black text-lg rounded-full shadow-lg hover:bg-popPink hover:text-white transition-colors hover:-translate-y-1">
+                        <span class="font-en lang-en">I HAVE COMPLETED THE SURVEY!</span>
+                        <span class="font-jp lang-jp">回答を完了しました！</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ステップ2: クーポン画面 (初期非表示) -->
+            <div id="gift-step-coupon" class="hidden flex-col h-full items-center justify-center p-6 md:p-10">
+                <i class="fa-solid fa-gift text-6xl text-popPink mb-6 animate-bounce"></i>
+
+                <h2
+                    class="text-3xl md:text-5xl text-popPink font-en font-black tracking-widest mb-2 lang-en text-center">
+                    Thank You!</h2>
+                <h2 class="text-3xl md:text-4xl text-popPink font-jp font-black mb-2 lang-jp text-center">ありがとうございます！
+                </h2>
+
+                <p class="text-softBrown text-center font-bold max-w-lg mb-10 font-jp leading-relaxed lang-jp">
+                    天川村の巡礼、お疲れ様でした！<br>ささやかながら、天川村内でご使用いただける電子クーポンを発行いたしました。協力店舗にてこの画面をご提示ください。
+                </p>
+                <p class="text-softBrown text-center font-bold max-w-lg mb-10 font-en leading-relaxed lang-en">
+                    Congratulations on completing your pilgrimage in Tenkawa!<br>Please present this digital coupon at
+                    participating stores in the village.
+                </p>
+
+                <!-- クーポンチケット UI -->
+                <div class="coupon-ticket w-full max-w-md p-8 text-center shadow-xl">
+                    <div class="border-b-3 border-dashed border-popBlue pb-4 mb-4">
+                        <h4 class="font-en font-bold text-sm text-popBlue/80 mb-1">TENKAWA VILLAGE EXCLUSIVE</h4>
+                        <h3 class="font-jp text-3xl font-black text-popPink">¥500 OFF COUPON</h3>
+                    </div>
+                    <div class="py-4">
+                        <p class="font-jp text-sm text-softBrown mb-2 font-bold lang-jp">対象店舗にて利用可能</p>
+                        <p class="font-en text-sm text-softBrown mb-2 font-bold lang-en">Valid at participating stores
+                        </p>
+
+                        <!-- ランダムなシリアルコード生成用 -->
+                        <div class="bg-gray-100 p-4 rounded-xl mt-4 border border-gray-200">
+                            <p class="text-xs text-softBrown/60 mb-1 font-en font-bold">SERIAL CODE</p>
+                            <p id="coupon-serial" class="font-en text-2xl font-black tracking-widest text-popBlue">
+                                TNKW-XXXX-XXXX</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="closeGiftModal()"
+                    class="mt-10 font-bold text-softBrown/60 hover:text-popPink transition-colors font-jp bg-white py-3 px-8 rounded-full shadow-sm hover:shadow-md lang-jp">クーポンを閉じて地図に戻る</button>
+                <button onclick="closeGiftModal()"
+                    class="mt-10 font-bold text-softBrown/60 hover:text-popPink transition-colors font-en bg-white py-3 px-8 rounded-full shadow-sm hover:shadow-md lang-en">CLOSE
+                    AND RETURN TO MAP</button>
             </div>
         </div>
     </div>
@@ -357,7 +585,7 @@
                 });
 
                 const marker = L.marker([spot.lat, spot.lng], { icon: icon }).addTo(map);
-                
+
                 // ツールチップ（スポット名）の設定
                 marker.bindTooltip(
                     `<span class="lang-jp">${spot.nameJp}</span><span class="lang-en">${spot.nameEn}</span>`,
@@ -372,7 +600,7 @@
 
                 markers[spot.id] = marker;
             });
-            
+
             // ツールチップの言語表示を初期状態に合わせる
             setTimeout(() => setLang(currentLang), 100);
         }
@@ -433,41 +661,41 @@
             if (!spot) return;
 
             currentSpotId = id;
-            
+
             // モーダルコンテンツ設定
             document.getElementById('modal-spot-en').textContent = spot.nameEn;
             document.getElementById('modal-spot-jp').textContent = spot.nameJp;
-            
+
             const isVisited = visitedSpots.includes(id);
-            
+
             if (isVisited) {
                 // すでに訪問済みの場合はお告げを直ちに表示
                 document.getElementById('modal-status').classList.add('hidden');
                 document.getElementById('modal-oracle-container').classList.remove('hidden');
-                
+
                 document.getElementById('modal-oracle-en').textContent = `"${spot.oracleEn}"`;
                 document.getElementById('modal-oracle-jp').textContent = `「${spot.oracleJp}」`;
-                
+
                 document.getElementById('btn-verify-en').classList.add('hidden');
                 document.getElementById('btn-verify-jp').classList.add('hidden');
                 document.getElementById('btn-receive-en').classList.remove('hidden');
                 document.getElementById('btn-receive-jp').classList.remove('hidden');
-                
+
                 document.getElementById('btn-receive-en').textContent = "CLOSE";
                 document.getElementById('btn-receive-jp').textContent = "閉じる";
             } else {
                 // 未訪問の場合は位置情報チェックを促す
                 document.getElementById('modal-status').classList.remove('hidden');
                 document.getElementById('modal-oracle-container').classList.add('hidden');
-                
+
                 document.getElementById('modal-status-text-en').textContent = "You must be within 500m of this location to receive the oracle.";
                 document.getElementById('modal-status-text-jp').textContent = "お告げを受け取るには、この聖地の500m以内にいる必要があります。";
-                
+
                 document.getElementById('btn-verify-en').classList.remove('hidden');
                 document.getElementById('btn-verify-jp').classList.remove('hidden');
                 document.getElementById('btn-receive-en').classList.add('hidden');
                 document.getElementById('btn-receive-jp').classList.add('hidden');
-                
+
                 document.getElementById('btn-verify-en').textContent = "VERIFY LOCATION";
                 document.getElementById('btn-verify-jp').textContent = "現在地を確認する";
             }
@@ -501,7 +729,7 @@
                 (position) => {
                     const userLat = position.coords.latitude;
                     const userLng = position.coords.longitude;
-                    
+
                     // 地図上のユーザーマーカーも更新しておく
                     updateUserLocation(userLat, userLng);
 
@@ -564,12 +792,12 @@
             const R = 6371000;
             const dLat = (lat2 - lat1) * (Math.PI / 180);
             const dLon = (lon2 - lon1) * (Math.PI / 180);
-            const a = 
+            const a =
                 Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
-                Math.sin(dLon / 2) * Math.sin(dLon / 2); 
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
-            const d = R * c; 
+                Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const d = R * c;
             return d;
         }
 
@@ -596,10 +824,57 @@
             if (visitedCount === spotsData.length) {
                 completeMsg.classList.add('show');
                 completeBox.classList.remove('hidden');
+
+                // 初回クリア時のみモーダルを自動で開くなどの演出を追加する場合はここに記述
             } else {
                 completeMsg.classList.remove('show');
                 completeBox.classList.add('hidden');
             }
+        }
+
+        // --- ギフトモーダル (アンケート＆クーポン) 制卸 ---
+        function openGiftModal() {
+            document.getElementById('gift-modal').classList.add('show');
+
+            // クーポンをすでに受け取っているかチェック (簡易状態管理)
+            const isCouponRedeemed = localStorage.getItem('tenkawa_coupon_redeemed');
+            if (isCouponRedeemed) {
+                // 回答済みなら直接クーポン画面へ
+                document.getElementById('gift-step-survey').classList.add('hidden');
+                document.getElementById('gift-step-coupon').classList.remove('hidden');
+                document.getElementById('gift-step-coupon').classList.add('flex');
+
+                // 保存されたシリアルを復元
+                const serial = localStorage.getItem('tenkawa_coupon_serial');
+                if (serial) document.getElementById('coupon-serial').textContent = serial;
+            } else {
+                // 初期状態（アンケート表示）
+                document.getElementById('gift-step-survey').classList.remove('hidden');
+                document.getElementById('gift-step-coupon').classList.add('hidden');
+                document.getElementById('gift-step-coupon').classList.remove('flex');
+            }
+        }
+
+        function closeGiftModal() {
+            document.getElementById('gift-modal').classList.remove('show');
+        }
+
+        function showCoupon() {
+            // アンケートフェーズからクーポンフェーズへ切り替え
+            document.getElementById('gift-step-survey').classList.add('hidden');
+            document.getElementById('gift-step-coupon').classList.remove('hidden');
+            document.getElementById('gift-step-coupon').classList.add('flex');
+
+            // シリアルコードの生成・保存
+            let serial = localStorage.getItem('tenkawa_coupon_serial');
+            if (!serial) {
+                const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+                const randomStr2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+                serial = `TNKW-${randomStr}-${randomStr2}`;
+                localStorage.setItem('tenkawa_coupon_serial', serial);
+                localStorage.setItem('tenkawa_coupon_redeemed', 'true');
+            }
+            document.getElementById('coupon-serial').textContent = serial;
         }
 
         // 6. ローカルストレージ
@@ -626,25 +901,26 @@
         function setLang(lang) {
             currentLang = lang;
             document.body.setAttribute('data-lang', lang);
-            
+
             const btnEn = document.getElementById('btn-lang-en');
             const btnJp = document.getElementById('btn-lang-jp');
-            
+
             if (lang === 'en') {
                 btnEn.classList.add('active');
                 btnJp.classList.remove('active');
-                
+
                 // ツールチップの表示状態を更新（動的にクラス操作など）
                 document.querySelectorAll('.leaflet-tooltip .lang-jp').forEach(el => el.style.display = 'none');
                 document.querySelectorAll('.leaflet-tooltip .lang-en').forEach(el => el.style.display = 'inline');
             } else {
                 btnEn.classList.remove('active');
                 btnJp.classList.add('active');
-                
+
                 document.querySelectorAll('.leaflet-tooltip .lang-en').forEach(el => el.style.display = 'none');
                 document.querySelectorAll('.leaflet-tooltip .lang-jp').forEach(el => el.style.display = 'inline');
             }
         }
     </script>
 </body>
+
 </html>
