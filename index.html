@@ -208,58 +208,6 @@
             transform: scale(1) translateY(0);
         }
 
-        /* アンケート＆クーポン モーダル (フルスクリーン) */
-        #gift-modal {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-            backdrop-filter: blur(10px);
-            z-index: 100;
-        }
-
-        #gift-modal.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .gift-content {
-            background: linear-gradient(135deg, #FFF9F5 0%, #FFE5F4 100%);
-            border: 4px solid #FF9CEE;
-            border-radius: 2rem;
-            box-shadow: 0 10px 40px rgba(255, 156, 238, 0.5);
-        }
-
-        /* クーポンデザイン */
-        .coupon-ticket {
-            background: white;
-            color: #5D4037;
-            border: 3px dashed #84D2F6;
-            border-radius: 1rem;
-            position: relative;
-        }
-
-        .coupon-ticket::before,
-        .coupon-ticket::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 30px;
-            height: 30px;
-            background: #FFE5F4;
-            border-radius: 50%;
-            transform: translateY(-50%);
-        }
-
-        .coupon-ticket::before {
-            left: -15px;
-            border-right: 3px dashed #84D2F6;
-        }
-
-        .coupon-ticket::after {
-            right: -15px;
-            border-left: 3px dashed #84D2F6;
-        }
-
         /* コンプリートメッセージ */
         #complete-msg {
             opacity: 0;
@@ -329,13 +277,13 @@
                 </h2>
                 <h3 class="text-lg md:text-xl text-popBlue font-jp font-bold tracking-widest mb-6">天川の守護を授かりました！</h3>
 
-                <button onclick="openGiftModal()"
-                    class="px-8 py-4 bg-popPink text-white font-black rounded-full hover:bg-popYellow hover:text-softBrown transition-all shadow-lg hover:-translate-y-1 hover:shadow-xl group">
+                <a href="https://forms.gle/43jZs8BDGckkYXfQ7" target="_blank" rel="noopener noreferrer"
+                    class="px-8 py-4 bg-popPink text-white font-black rounded-full hover:bg-popYellow hover:text-softBrown transition-all shadow-lg hover:-translate-y-1 hover:shadow-xl group inline-block">
                     <span class="font-en tracking-wider block lang-en"><i class="fa-solid fa-gift mr-2"></i> GET YOUR
                         EXCLUSIVE GIFT!</span>
                     <span class="font-jp tracking-widest block lang-jp"><i class="fa-solid fa-gift mr-2"></i>
                         特別な贈り物を受け取る！</span>
-                </button>
+                </a>
             </div>
         </div>
     </div>
@@ -403,95 +351,7 @@
         </div>
     </div>
 
-    <!-- 隠しクリア画面 (アンケート & クーポン) モーダル -->
-    <div id="gift-modal" class="fixed inset-0 flex items-center justify-center p-4 sm:p-6 md:p-12">
-        <div class="absolute inset-0 bg-white/60 backdrop-blur-md"></div>
-
-        <div class="gift-content relative z-10 w-full max-w-4xl h-full max-h-[90vh] flex flex-col overflow-hidden">
-            <!-- 閉じるボタン -->
-            <button onclick="closeGiftModal()"
-                class="absolute top-4 right-4 z-50 text-softBrown hover:text-popPink bg-white rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-md">
-                <i class="fa-solid fa-xmark text-2xl font-black"></i>
-            </button>
-
-            <!-- ステップ1: アンケートフォーム -->
-            <div id="gift-step-survey" class="flex flex-col h-full items-center p-6 md:p-10">
-                <div class="text-center mb-6">
-                    <h2 class="text-2xl md:text-3xl text-popPink font-en font-black mb-2 lang-en">Questionnaire 📝</h2>
-                    <h2 class="text-2xl md:text-3xl text-popPink font-jp font-black mb-2 lang-jp">アンケート 📝</h2>
-                    <p class="text-softBrown font-bold text-sm md:text-base lang-en">Please answer this quick survey to
-                        unlock your 500 JPY village coupon!</p>
-                    <p class="text-softBrown font-bold text-sm md:text-base lang-jp">
-                        村内で使える500円クーポンを受け取るため、簡単なアンケートにお答えください！</p>
-                </div>
-
-                <div
-                    class="flex-grow w-full bg-white rounded-2xl overflow-hidden shadow-inner border-2 border-popPink/20 relative">
-                    <iframe
-                        src="https://docs.google.com/forms/d/e/1FAIpQLScU0D5Vp-W4sXg-gG2XWe30d4M-F57-c5m3Q2_5J6wF9d5X9A/viewform?embedded=true"
-                        width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0">読み込んでいます…</iframe>
-                </div>
-
-                <div class="mt-6 text-center w-full max-w-md">
-                    <p class="text-popBlue font-bold text-sm md:text-base mb-3 font-jp lang-jp"><i
-                            class="fa-solid fa-arrow-down mr-1"></i> 回答完了画面が表示されたらボタンを押してね！</p>
-                    <p class="text-popBlue font-bold text-sm md:text-base mb-3 font-en lang-en"><i
-                            class="fa-solid fa-arrow-down mr-1"></i> Click the button after submitting!</p>
-                    <button onclick="showCoupon()"
-                        class="w-full py-4 bg-popYellow text-softBrown font-black text-lg rounded-full shadow-lg hover:bg-popPink hover:text-white transition-colors hover:-translate-y-1">
-                        <span class="font-en lang-en">I HAVE COMPLETED THE SURVEY!</span>
-                        <span class="font-jp lang-jp">回答を完了しました！</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- ステップ2: クーポン画面 (初期非表示) -->
-            <div id="gift-step-coupon" class="hidden flex-col h-full items-center justify-center p-6 md:p-10">
-                <i class="fa-solid fa-gift text-6xl text-popPink mb-6 animate-bounce"></i>
-
-                <h2
-                    class="text-3xl md:text-5xl text-popPink font-en font-black tracking-widest mb-2 lang-en text-center">
-                    Thank You!</h2>
-                <h2 class="text-3xl md:text-4xl text-popPink font-jp font-black mb-2 lang-jp text-center">ありがとうございます！
-                </h2>
-
-                <p class="text-softBrown text-center font-bold max-w-lg mb-10 font-jp leading-relaxed lang-jp">
-                    天川村の巡礼、お疲れ様でした！<br>ささやかながら、天川村内でご使用いただける電子クーポンを発行いたしました。協力店舗にてこの画面をご提示ください。
-                </p>
-                <p class="text-softBrown text-center font-bold max-w-lg mb-10 font-en leading-relaxed lang-en">
-                    Congratulations on completing your pilgrimage in Tenkawa!<br>Please present this digital coupon at
-                    participating stores in the village.
-                </p>
-
-                <!-- クーポンチケット UI -->
-                <div class="coupon-ticket w-full max-w-md p-8 text-center shadow-xl">
-                    <div class="border-b-3 border-dashed border-popBlue pb-4 mb-4">
-                        <h4 class="font-en font-bold text-sm text-popBlue/80 mb-1">TENKAWA VILLAGE EXCLUSIVE</h4>
-                        <h3 class="font-jp text-3xl font-black text-popPink">¥500 OFF COUPON</h3>
-                    </div>
-                    <div class="py-4">
-                        <p class="font-jp text-sm text-softBrown mb-2 font-bold lang-jp">対象店舗にて利用可能</p>
-                        <p class="font-en text-sm text-softBrown mb-2 font-bold lang-en">Valid at participating stores
-                        </p>
-
-                        <!-- ランダムなシリアルコード生成用 -->
-                        <div class="bg-gray-100 p-4 rounded-xl mt-4 border border-gray-200">
-                            <p class="text-xs text-softBrown/60 mb-1 font-en font-bold">SERIAL CODE</p>
-                            <p id="coupon-serial" class="font-en text-2xl font-black tracking-widest text-popBlue">
-                                TNKW-XXXX-XXXX</p>
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="closeGiftModal()"
-                    class="mt-10 font-bold text-softBrown/60 hover:text-popPink transition-colors font-jp bg-white py-3 px-8 rounded-full shadow-sm hover:shadow-md lang-jp">クーポンを閉じて地図に戻る</button>
-                <button onclick="closeGiftModal()"
-                    class="mt-10 font-bold text-softBrown/60 hover:text-popPink transition-colors font-en bg-white py-3 px-8 rounded-full shadow-sm hover:shadow-md lang-en">CLOSE
-                    AND RETURN TO MAP</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- Leaflet JS implementation -->
     <script>
         // 1. 定数とデータ定義
         const spotsData = [
@@ -831,52 +691,6 @@
                 completeBox.classList.add('hidden');
             }
         }
-
-        // --- ギフトモーダル (アンケート＆クーポン) 制卸 ---
-        function openGiftModal() {
-            document.getElementById('gift-modal').classList.add('show');
-
-            // クーポンをすでに受け取っているかチェック (簡易状態管理)
-            const isCouponRedeemed = localStorage.getItem('tenkawa_coupon_redeemed');
-            if (isCouponRedeemed) {
-                // 回答済みなら直接クーポン画面へ
-                document.getElementById('gift-step-survey').classList.add('hidden');
-                document.getElementById('gift-step-coupon').classList.remove('hidden');
-                document.getElementById('gift-step-coupon').classList.add('flex');
-
-                // 保存されたシリアルを復元
-                const serial = localStorage.getItem('tenkawa_coupon_serial');
-                if (serial) document.getElementById('coupon-serial').textContent = serial;
-            } else {
-                // 初期状態（アンケート表示）
-                document.getElementById('gift-step-survey').classList.remove('hidden');
-                document.getElementById('gift-step-coupon').classList.add('hidden');
-                document.getElementById('gift-step-coupon').classList.remove('flex');
-            }
-        }
-
-        function closeGiftModal() {
-            document.getElementById('gift-modal').classList.remove('show');
-        }
-
-        function showCoupon() {
-            // アンケートフェーズからクーポンフェーズへ切り替え
-            document.getElementById('gift-step-survey').classList.add('hidden');
-            document.getElementById('gift-step-coupon').classList.remove('hidden');
-            document.getElementById('gift-step-coupon').classList.add('flex');
-
-            // シリアルコードの生成・保存
-            let serial = localStorage.getItem('tenkawa_coupon_serial');
-            if (!serial) {
-                const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
-                const randomStr2 = Math.random().toString(36).substring(2, 6).toUpperCase();
-                serial = `TNKW-${randomStr}-${randomStr2}`;
-                localStorage.setItem('tenkawa_coupon_serial', serial);
-                localStorage.setItem('tenkawa_coupon_redeemed', 'true');
-            }
-            document.getElementById('coupon-serial').textContent = serial;
-        }
-
         // 6. ローカルストレージ
         function saveState() {
             try {
@@ -920,6 +734,13 @@
                 document.querySelectorAll('.leaflet-tooltip .lang-jp').forEach(el => el.style.display = 'inline');
             }
         }
+
+        // デバッグ・シークレットコマンド: コンソールから makeit() で全クリア
+        window.makeit = function() {
+            localStorage.setItem('tenkawa_visited_spots', JSON.stringify(['s1', 's2', 's3', 's4', 's5']));
+            location.reload();
+            return "All missions cleared! Reloading...";
+        };
     </script>
 </body>
 
